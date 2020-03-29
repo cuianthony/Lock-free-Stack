@@ -5,7 +5,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicStampedReference;
 
 public class EliminationBackoffStack {
-    AtomicStampedReference<Node> topRef = new AtomicStampedReference<Node>(null, 0);
+    AtomicStampedReference<Node> topRef = new AtomicStampedReference<Node>(new Node(null), 0);
     int exchangeDuration;
     EliminationArray eliminationArray;
     ThreadLocal<RangePolicy> policy;
@@ -31,7 +31,7 @@ public class EliminationBackoffStack {
         Node oldTopNode = oldTopRef.get(stampHolder);
         n.next = oldTopNode;
         // Update stamp *not sure if correct
-        n.value.set(n.value.getReference(), n.value.getStamp()+1);
+//        n.value.set(n.value.getReference(), n.value.getStamp()+1);
         return (topRef.compareAndSet(oldTopNode, n, stampHolder[0], n.value.getStamp()));
     }
 
@@ -57,10 +57,14 @@ public class EliminationBackoffStack {
         AtomicStampedReference<Node> oldTopRef = topRef;
         int[] stampHolder = new int[1];
         Node oldTopNode = oldTopRef.get(stampHolder);
-        if (oldTopNode == null) {
+        if (oldTopNode.value.getReference() == null) {
             throw new EmptyStackException();
         }
         Node newTopRef = oldTopNode.next;
+        // ISSUE: if newTopRef is null then throws NullPointerException for newTopRef.value
+//        if (newTopRef == null && topRef.compareAndSet(oldTopNode, null, stampHolder[0], 0)) {
+//            return oldTopNode;
+//        } else
         if (topRef.compareAndSet(oldTopNode, newTopRef, stampHolder[0], newTopRef.value.getStamp())) {
             return oldTopNode;
         } else {
@@ -106,6 +110,16 @@ public class EliminationBackoffStack {
         }
     }
 
+    public int getSize() {
+        int count = 0;
+        Node curr = topRef.getReference();
+        while (curr.value.getReference() != null) {
+            count++;
+            curr = curr.next;
+        }
+        return count;
+    }
+
     public static class RangePolicy {
         int maxRange;
         int currentRange = 1;
@@ -115,6 +129,7 @@ public class EliminationBackoffStack {
         }
 
         public void recordEliminationSuccess() {
+            System.out.println("Successful exchange");
             if (currentRange < maxRange) {
                 currentRange++;
             }

@@ -8,24 +8,24 @@ import java.util.concurrent.atomic.AtomicStampedReference;
 
 public class EliminationArray {
     int duration;
-    Exchanger<AtomicStampedReference<Node>>[] exchanger;
+    Exchanger<Node>[] exchanger;
     Random random;
 
     public EliminationArray(int capacity) {
-        this.exchanger = (Exchanger<AtomicStampedReference<Node>>[]) new Exchanger[capacity];
+        this.exchanger = (Exchanger<Node>[]) new Exchanger[capacity];
         for (int i=0; i<capacity; i++) {
-            exchanger[i] = new Exchanger<>();
+            exchanger[i] = new Exchanger<Node>();
         }
 
         random = new Random();
     }
 
-    public AtomicStampedReference<Node> visit(AtomicStampedReference<Node> nodeRef, int range) throws TimeoutException, InterruptedException {
+    public Node visit(Node n, int range) throws TimeoutException, InterruptedException {
         int slot = random.nextInt(range);
         // Update stamp if thread is pushing
-        if (nodeRef != null) {
-            nodeRef.set(nodeRef.getReference(), nodeRef.getStamp()+1);
+        if (n != null) {
+            n.value.set(n.value.getReference(), n.value.getStamp()+1);
         }
-        return (exchanger[slot].exchange(nodeRef, duration, TimeUnit.MILLISECONDS));
+        return (exchanger[slot].exchange(n, duration, TimeUnit.MILLISECONDS));
     }
 }

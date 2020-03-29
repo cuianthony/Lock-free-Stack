@@ -1,6 +1,5 @@
 package q2;
 
-import java.sql.Time;
 import java.util.EmptyStackException;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicStampedReference;
@@ -26,25 +25,25 @@ public class EliminationBackoffStack {
         };
     }
 
-    private boolean tryPush(AtomicStampedReference<Node> nodeRef) {
+    private boolean tryPush(Node n) {
         AtomicStampedReference<Node> oldTopRef = topRef;
         int[] stampHolder = new int[1];
         Node oldTopNode = oldTopRef.get(stampHolder);
-        nodeRef.getReference().next = oldTopRef;
+        n.next = oldTopNode;
         // Update stamp *not sure if correct
-        nodeRef.set(nodeRef.getReference(), nodeRef.getStamp()+1);
-        return (topRef.compareAndSet(oldTopNode, nodeRef.getReference(), stampHolder[0], nodeRef.getStamp()));
+        n.value.set(n.value.getReference(), n.value.getStamp()+1);
+        return (topRef.compareAndSet(oldTopNode, n, stampHolder[0], n.value.getStamp()));
     }
 
-    public void push(AtomicStampedReference<Node> nodeRef) throws InterruptedException {
+    public void push(Node n) throws InterruptedException {
         RangePolicy rangePolicy = policy.get();
         while (true) {
-            if (tryPush(nodeRef)) {
+            if (tryPush(n)) {
                 return;
             } else try {
                 // If we successfully "push" through an exchange, we should also update stamp
-                AtomicStampedReference<Node> otherRef = eliminationArray.visit(nodeRef, rangePolicy.getRange());
-                if (otherRef == null) {
+                Node otherNode = eliminationArray.visit(n, rangePolicy.getRange());
+                if (otherNode == null) {
                     rangePolicy.recordEliminationSuccess();
                     return;
                 }
@@ -54,32 +53,32 @@ public class EliminationBackoffStack {
         }
     }
 
-    private AtomicStampedReference<Node> tryPop() throws EmptyStackException {
+    private Node tryPop() throws EmptyStackException {
         AtomicStampedReference<Node> oldTopRef = topRef;
         int[] stampHolder = new int[1];
         Node oldTopNode = oldTopRef.get(stampHolder);
         if (oldTopNode == null) {
             throw new EmptyStackException();
         }
-        AtomicStampedReference<Node> newTopRef = oldTopNode.next;
-        if (topRef.compareAndSet(oldTopNode, newTopRef.getReference(), stampHolder[0], newTopRef.getStamp())) {
-            return oldTopRef;
+        Node newTopRef = oldTopNode.next;
+        if (topRef.compareAndSet(oldTopNode, newTopRef, stampHolder[0], newTopRef.value.getStamp())) {
+            return oldTopNode;
         } else {
-            return new AtomicStampedReference<Node>(null, 0);
+            return null;
         }
     }
 
-    public AtomicStampedReference<Node> pop() throws EmptyStackException, InterruptedException {
+    public Node pop() throws EmptyStackException, InterruptedException {
         RangePolicy rangePolicy = policy.get();
         while (true) {
-            AtomicStampedReference<Node> returnRef = tryPop();
-            if (returnRef.getReference() != null) {
-                return returnRef;
+            Node returnNode = tryPop();
+            if (returnNode != null) {
+                return returnNode;
             } else try {
-                AtomicStampedReference<Node> otherRef = eliminationArray.visit(null, rangePolicy.getRange());
-                if (otherRef != null) {
+                Node otherNode = eliminationArray.visit(null, rangePolicy.getRange());
+                if (otherNode != null) {
                     rangePolicy.recordEliminationSuccess();
-                    return returnRef;
+                    return otherNode;
                 }
             } catch (TimeoutException ex) {
                 rangePolicy.recordEliminationTimeout();
@@ -87,23 +86,23 @@ public class EliminationBackoffStack {
         }
     }
 
-    public AtomicStampedReference<Node> popDemo() throws EmptyStackException, InterruptedException {
+    public Node popDemo() throws EmptyStackException, InterruptedException {
         AtomicStampedReference<Node> oldTopRef = topRef;
         int[] stampHolder = new int[1];
-        Node oldTopNode = topRef.get(stampHolder);
+        Node oldTopNode = oldTopRef.get(stampHolder);
         if (oldTopNode == null) {
             throw new EmptyStackException();
         }
-        AtomicStampedReference<Node> newTopRef = oldTopNode.next;
-        System.out.println(String.format("Curr TOS has value %d and stamp %d", oldTopRef.getReference().value, oldTopRef.getStamp()));
+        Node newTopRef = oldTopNode.next;
+        System.out.println(String.format("Curr TOS has value %d and stamp %d", oldTopNode.value.getReference(), oldTopNode.value.getStamp()));
         // Wait for other thread to do pop, pop, push
         Thread.sleep(5000);
         // this CAS should fail because the stamp on the 3 node will have changed
-        if (topRef.compareAndSet(oldTopNode, newTopRef.getReference(), stampHolder[0], newTopRef.getStamp())) {
-            return oldTopRef;
+        if (topRef.compareAndSet(oldTopNode, newTopRef, stampHolder[0], newTopRef.value.getStamp())) {
+            return oldTopNode;
         } else {
-            System.out.println(String.format("CAS failed: new TOS has value %d and stamp %d", topRef.getReference().value, topRef.getStamp()));
-            return new AtomicStampedReference<Node>(null, 0);
+            System.out.println(String.format("CAS failed: new TOS has value %d and stamp %d", topRef.getReference().value.getReference(), topRef.getStamp()));
+            return null;
         }
     }
 

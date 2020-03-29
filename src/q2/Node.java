@@ -3,10 +3,10 @@ package q2;
 import java.util.concurrent.atomic.AtomicStampedReference;
 
 public class Node {
-    public int value;
-    public AtomicStampedReference<Node> next;
+    public AtomicStampedReference<Integer> value;
+    public Node next;
 
-    public Node(int value) {
+    public Node(AtomicStampedReference<Integer> value) {
         this.value = value;
         this.next = null;
     }

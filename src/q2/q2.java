@@ -6,11 +6,11 @@ import java.util.Random;
 
 public class q2 {
     static EliminationBackoffStack stack;
-    static int numThreads = 8;
-    static int maxDelay = 50;
-    static int numOps = 200;
-    static int timeout = 0;
-    static int arraySize = 1;
+    static int numThreads = 16;
+    static int maxDelay = 10;
+    static int numOps = 1200;
+    static int timeout = 2;
+    static int arraySize = 4;
 
     static int popCount = 0;
     static int pushCount = 0;

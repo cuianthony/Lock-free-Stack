@@ -2,6 +2,7 @@ package q2;
 
 import java.util.ArrayList;
 import java.util.EmptyStackException;
+import java.util.LinkedList;
 import java.util.Random;
 
 public class q2 {
@@ -52,7 +53,7 @@ public class q2 {
         int attemptCount = 0;
         Random random = new Random();
 
-        ArrayList<Node> popped = new ArrayList<Node>();
+        LinkedList<Node> popped = new LinkedList<Node>();
 
         @Override
         public void run() {
@@ -68,10 +69,11 @@ public class q2 {
                             stack.push(popped.get(nodeIndex));
 
                             // Remove the node we just pushed and replace it with the last node in popped
-                            Node shift = popped.remove(popped.size()-1);
-                            if (!popped.isEmpty() && nodeIndex < popped.size()) {
-                                popped.set(nodeIndex, shift);
-                            }
+//                            Node shift = popped.remove(popped.size()-1);
+//                            if (!popped.isEmpty() && nodeIndex < popped.size()) {
+//                                popped.set(nodeIndex, shift);
+//                            }
+                            popped.remove(nodeIndex);
                         } else {
                             // Push new node
                             stack.push(new Node(random.nextInt(numOps)));
@@ -86,7 +88,7 @@ public class q2 {
                             // To represent null, we still have a Node but give it a null Integer value
                             poppedNode.next = new Node(null);
                             if (popped.size() == 20) {
-                                popped.remove(0);
+                                popped.remove();
                             }
                             popped.add(poppedNode);
                             incPopCount();

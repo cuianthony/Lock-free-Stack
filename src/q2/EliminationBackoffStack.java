@@ -131,7 +131,6 @@ public class EliminationBackoffStack {
         }
 
         public void recordEliminationSuccess() {
-//            System.out.println("Successful exchange");
             q2.incExchangeCount();
             if (currentRange < maxRange) {
                 currentRange++;

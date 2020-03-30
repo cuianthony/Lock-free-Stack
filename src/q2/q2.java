@@ -3,7 +3,6 @@ package q2;
 import java.util.ArrayList;
 import java.util.EmptyStackException;
 import java.util.Random;
-import java.util.concurrent.atomic.AtomicStampedReference;
 
 public class q2 {
     static EliminationBackoffStack stack;
@@ -19,9 +18,6 @@ public class q2 {
 
     public static void main(String[] args) throws InterruptedException {
         stack = new EliminationBackoffStack(timeout, arraySize);
-//        stack.push(new Node(1));
-//        stack.push(new Node(2));
-//        stack.push(new Node(3));
 
         Thread[] threads = new Thread[numThreads];
         for (int i=0; i<numThreads; i++) {
@@ -53,16 +49,10 @@ public class q2 {
     }
 
     static class StackThread implements Runnable {
-//        int popCount = 0;
-//        int pushCount = 0;
         int attemptCount = 0;
         Random random = new Random();
 
         ArrayList<Node> popped = new ArrayList<Node>();
-
-        StackThread() {
-
-        }
 
         @Override
         public void run() {
@@ -73,7 +63,6 @@ public class q2 {
                     if (choice < 2) {
                         // Push previously popped node
                         if (!popped.isEmpty() && choice == 0) {
-//                            System.out.println(String.format("%s old push attempt", Thread.currentThread().getName()));
                             int nodeIndex = random.nextInt(popped.size());
                             popped.get(nodeIndex).updateStamp(); // increment stamp value to mark this thread is pushing
                             stack.push(popped.get(nodeIndex));
@@ -83,17 +72,14 @@ public class q2 {
                             if (!popped.isEmpty() && nodeIndex < popped.size()) {
                                 popped.set(nodeIndex, shift);
                             }
-//                            popped.set(nodeIndex, popped.remove(popped.size() - 1));
                         } else {
                             // Push new node
-//                            System.out.println(String.format("%s new push attempt", Thread.currentThread().getName()));
                             stack.push(new Node(random.nextInt(numOps)));
                         }
                         // Update counts
                         attemptCount++;
                         incPushCount();
                     } else {
-//                        System.out.println(String.format("%s pop attempt", Thread.currentThread().getName()));
                         // Pop
                         try {
                             Node poppedNode = stack.pop();

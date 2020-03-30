@@ -13,9 +13,9 @@ public class q2 {
     static int timeout = 0;
     static int arraySize = 1;
 
-    static volatile int popCount = 0;
-    static volatile int pushCount = 0;
-    static volatile int exchangeCount = 0;
+    static int popCount = 0;
+    static int pushCount = 0;
+    static int exchangeCount = 0;
 
     public static void main(String[] args) throws InterruptedException {
         stack = new EliminationBackoffStack(timeout, arraySize);
@@ -40,6 +40,16 @@ public class q2 {
 
         System.out.println("Num exchanges: " + exchangeCount);
         System.out.println(pushCount + " " + popCount + " " + stack.getSize());
+    }
+
+    synchronized static void incPushCount() {
+        pushCount++;
+    }
+    synchronized static void incPopCount() {
+        popCount++;
+    }
+    synchronized static void incExchangeCount() {
+        exchangeCount++;
     }
 
     static class StackThread implements Runnable {
@@ -81,7 +91,7 @@ public class q2 {
                         }
                         // Update counts
                         attemptCount++;
-                        pushCount++;
+                        incPushCount();
                     } else {
 //                        System.out.println(String.format("%s pop attempt", Thread.currentThread().getName()));
                         // Pop
@@ -93,11 +103,9 @@ public class q2 {
                                 popped.remove(0);
                             }
                             popped.add(poppedNode);
-                            popCount++;
-                            attemptCount++;
-                        } catch (EmptyStackException e) {
-                            attemptCount++;
-                        }
+                            incPopCount();
+                        } catch (EmptyStackException ignored) { } //do nothing and try again
+                        attemptCount++;
                     }
                     // Random sleep
                     Thread.sleep(random.nextInt(maxDelay));

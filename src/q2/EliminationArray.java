@@ -11,8 +11,9 @@ public class EliminationArray {
     Exchanger<Node>[] exchanger;
     Random random;
 
-    public EliminationArray(int capacity) {
+    public EliminationArray(int duration, int capacity) {
         this.exchanger = (Exchanger<Node>[]) new Exchanger[capacity];
+        this.duration = duration;
         for (int i=0; i<capacity; i++) {
             exchanger[i] = new Exchanger<Node>();
         }

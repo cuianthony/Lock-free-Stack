@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.AtomicStampedReference;
 
 public class EliminationBackoffStack {
     AtomicStampedReference<Node> topRef = new AtomicStampedReference<Node>(new Node(null), 0);
-    int exchangeDuration;
+//    int exchangeDuration;
     EliminationArray eliminationArray;
     ThreadLocal<RangePolicy> policy;
 
@@ -16,8 +16,8 @@ public class EliminationBackoffStack {
      * to keep track of writes to the Reference by other threads.
      */
     public EliminationBackoffStack(int exchangeDuration, int elimArraySize) {
-        this.exchangeDuration = exchangeDuration;
-        eliminationArray = new EliminationArray(elimArraySize);
+//        this.exchangeDuration = exchangeDuration;
+        eliminationArray = new EliminationArray(exchangeDuration, elimArraySize);
         policy = new ThreadLocal<RangePolicy>() {
             protected synchronized RangePolicy initialValue() {
                 return new RangePolicy(elimArraySize);
@@ -57,10 +57,12 @@ public class EliminationBackoffStack {
         AtomicStampedReference<Node> oldTopRef = topRef;
         int[] stampHolder = new int[1];
         Node oldTopNode = oldTopRef.get(stampHolder);
-        if (oldTopNode.value.getReference() == null) {
-            throw new EmptyStackException();
+        if (oldTopNode.value.getReference() == null) { //stack is empty
+            throw new EmptyStackException(); // immediately exit and try a new stack operation
         }
         Node newTopRef = oldTopNode.next;
+//        System.out.println(String.format("%s pop \t| newTopRef null: %b | newTopRef.value null: %b",
+//                Thread.currentThread().getName(), newTopRef==null, newTopRef.value==null));
         // ISSUE: if newTopRef is null then throws NullPointerException for newTopRef.value
 //        if (newTopRef == null && topRef.compareAndSet(oldTopNode, null, stampHolder[0], 0)) {
 //            return oldTopNode;
@@ -129,7 +131,8 @@ public class EliminationBackoffStack {
         }
 
         public void recordEliminationSuccess() {
-            System.out.println("Successful exchange");
+//            System.out.println("Successful exchange");
+            q2.exchangeCount++;
             if (currentRange < maxRange) {
                 currentRange++;
             }

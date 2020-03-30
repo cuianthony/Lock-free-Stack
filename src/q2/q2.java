@@ -7,14 +7,15 @@ import java.util.concurrent.atomic.AtomicStampedReference;
 
 public class q2 {
     static EliminationBackoffStack stack;
-    static int numThreads = 4;
-    static int maxDelay = 200;
-    static int numOps = 100;
-    static int timeout = 10;
+    static int numThreads = 8;
+    static int maxDelay = 50;
+    static int numOps = 200;
+    static int timeout = 0;
     static int arraySize = 1;
 
     static volatile int popCount = 0;
     static volatile int pushCount = 0;
+    static volatile int exchangeCount = 0;
 
     public static void main(String[] args) throws InterruptedException {
         stack = new EliminationBackoffStack(timeout, arraySize);
@@ -27,13 +28,17 @@ public class q2 {
             threads[i] = new Thread(new StackThread());
         }
 
+        long start = System.currentTimeMillis();
         for (Thread t : threads) {
             t.start();
         }
         for (Thread t : threads) {
             t.join();
         }
+        long end = System.currentTimeMillis();
+        System.out.println(end - start);
 
+        System.out.println("Num exchanges: " + exchangeCount);
         System.out.println(pushCount + " " + popCount + " " + stack.getSize());
     }
 
@@ -82,7 +87,8 @@ public class q2 {
                         // Pop
                         try {
                             Node poppedNode = stack.pop();
-                            poppedNode.next = null;
+                            // To represent null, we still have a Node but give it a null Integer value
+                            poppedNode.next = new Node(null);
                             if (popped.size() == 20) {
                                 popped.remove(0);
                             }

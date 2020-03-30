@@ -11,8 +11,8 @@ public class q1 {
     static ConcurrentHashMap<Integer, Triple> tripleMap;
     static volatile Triple endTriple;
 
-    static int n = 100000;
-    static int t = 100;
+    static int n = 1000000;
+    static int t = 1000;
     static long s = System.currentTimeMillis();
 //    static long s = (args.length>1) ? Integer.parseInt(args[1]) : System.currentTimeMillis();
 
@@ -22,7 +22,6 @@ public class q1 {
 
         // Get the random bracket string
         char[] brackets = Bracket.construct(n, s);
-//        char[] brackets = {'[', '[', '*', ']', ']'};
         // Construct the thread pool
         ExecutorService executor = Executors.newFixedThreadPool(t);
 
@@ -42,7 +41,6 @@ public class q1 {
         return ++idCounter;
     }
 
-    // Make sure that static class is working the way you expect
     static class Triple {
         public ArrayDeque<Integer> idStack;
         public ArrayDeque<Position> posStack;

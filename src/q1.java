@@ -7,12 +7,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class q1 {
-    static volatile int idCounter = 0;
+    static int idCounter = 0;
     static ConcurrentHashMap<Integer, Triple> tripleMap;
     static volatile Triple endTriple;
 
-    static int n = 1000;
-    static int t = 3;
+    static int n = 100000;
+    static int t = 100;
     static long s = System.currentTimeMillis();
 //    static long s = (args.length>1) ? Integer.parseInt(args[1]) : System.currentTimeMillis();
 
@@ -36,6 +36,10 @@ public class q1 {
 
         System.out.println(endTriple.ok + " " + Bracket.verify());
         executor.shutdown();
+    }
+
+    synchronized static int incIdCounter() {
+        return ++idCounter;
     }
 
     // Make sure that static class is working the way you expect

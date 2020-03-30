@@ -78,7 +78,7 @@ public class DivideRunnable implements Runnable {
         }
 
         // Mark this "position in recursive tree" with an id
-        int id = q1.idCounter++;
+        int id = q1.incIdCounter();
         // Otherwise, split the char array and create two new DivideRunnables
         DivideRunnable leftDivide = splitString(left, id, mid, q1.Position.LEFT);
         DivideRunnable rightDivide = splitString(mid, id, right, q1.Position.RIGHT);

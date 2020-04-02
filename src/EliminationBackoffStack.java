@@ -1,4 +1,3 @@
-package q2;
 
 import java.util.EmptyStackException;
 import java.util.concurrent.TimeoutException;

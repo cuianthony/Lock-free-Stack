@@ -1,5 +1,3 @@
-import com.sun.scenario.effect.Merge;
-
 import java.util.ArrayDeque;
 import java.util.concurrent.ExecutorService;
 

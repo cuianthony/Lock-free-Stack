@@ -1,7 +1,4 @@
-import java.lang.reflect.Array;
 import java.util.ArrayDeque;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -11,13 +8,21 @@ public class q1 {
     static ConcurrentHashMap<Integer, Triple> tripleMap;
     static volatile Triple endTriple;
 
-    static int n = 5000;
-    static int t = 4;
-    static long s = System.currentTimeMillis();
-//    static long s = (args.length>1) ? Integer.parseInt(args[1]) : System.currentTimeMillis();
+    static int n;
+    static int t;
+    static long s;
 
     public static void main(String[] args) {
-        // Not sure if I should customize or just use defaults
+        if (args.length==2 || args.length==3) {
+            n = Integer.parseInt(args[0]);
+            t = Integer.parseInt(args[1]);
+            s = (args.length>2) ? Integer.parseInt(args[2]) : System.currentTimeMillis();
+        }
+        else {
+            System.out.println("2 or 3 arguments required: n t s(optional)");
+            return;
+        }
+
         tripleMap = new ConcurrentHashMap<>(n, (float) 0.75, t);
 
         // Get the random bracket string
@@ -29,7 +34,7 @@ public class q1 {
         // Split the string down to base cases by passing tasks to executor
         executor.execute(new DivideRunnable(new ArrayDeque<>(), brackets, 0, brackets.length, new ArrayDeque<>(), executor));
 
-        while (endTriple == null); // Is there a better way to do this?
+        while (endTriple == null);
         long end = System.currentTimeMillis();
         System.out.println(end - start);
 

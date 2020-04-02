@@ -1,24 +1,37 @@
 package q2;
 
-import java.util.ArrayList;
 import java.util.EmptyStackException;
 import java.util.LinkedList;
 import java.util.Random;
 
 public class q2 {
     static EliminationBackoffStack stack;
-    static int numThreads = 16;
-    static int maxDelay = 10;
-    static int numOps = 1200;
-    static int timeout = 2;
-    static int arraySize = 4;
+    static int numThreads;
+    static int maxDelay;
+    static int numOps;
+    static int timeout;
+    static int arraySize;
 
     static int popCount = 0;
     static int pushCount = 0;
     static int exchangeCount = 0;
 
     public static void main(String[] args) throws InterruptedException {
+        if (args.length==5) {
+            numThreads = Integer.parseInt(args[0]);
+            maxDelay = Integer.parseInt(args[1]);
+            numOps = Integer.parseInt(args[2]);
+            timeout = Integer.parseInt(args[3]);
+            arraySize = Integer.parseInt(args[4]);
+        }
+        else {
+            System.out.println("5 arguments required: p d n t e");
+            return;
+        }
+
         stack = new EliminationBackoffStack(timeout, arraySize);
+
+//        basicABATest();
 
         Thread[] threads = new Thread[numThreads];
         for (int i=0; i<numThreads; i++) {
@@ -35,7 +48,7 @@ public class q2 {
         long end = System.currentTimeMillis();
         System.out.println(end - start);
 
-        System.out.println("Num exchanges: " + exchangeCount);
+//        System.out.println("Num exchanges: " + exchangeCount);
         System.out.println(pushCount + " " + popCount + " " + stack.getSize());
     }
 
@@ -65,14 +78,7 @@ public class q2 {
                         // Push previously popped node
                         if (!popped.isEmpty() && choice == 0) {
                             int nodeIndex = random.nextInt(popped.size());
-                            popped.get(nodeIndex).updateStamp(); // increment stamp value to mark this thread is pushing
                             stack.push(popped.get(nodeIndex));
-
-                            // Remove the node we just pushed and replace it with the last node in popped
-//                            Node shift = popped.remove(popped.size()-1);
-//                            if (!popped.isEmpty() && nodeIndex < popped.size()) {
-//                                popped.set(nodeIndex, shift);
-//                            }
                             popped.remove(nodeIndex);
                         } else {
                             // Push new node
@@ -104,11 +110,16 @@ public class q2 {
         }
     }
 
+    // Testing basic ABA problem with 2 threads
     public static void basicABATest() throws InterruptedException {
-        // Testing ABA problem with 2 threads
+        // Initialize stack to TOS -> 3 -> 2 -> 1 -> null
+        stack.push(new Node(1));
+        stack.push(new Node(2));
+        stack.push(new Node(3));
+
         Thread t0 = new Thread(() -> {
             try {
-                stack.popDemo();
+                Node returnNode = stack.popDemo();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -117,8 +128,8 @@ public class q2 {
         Thread t1 = new Thread(() -> {
             try {
                 Node node3 = stack.pop();
-                node3.next = null;
-                stack.pop();
+                node3.next = new Node(null);
+                Node node2 = stack.pop();
                 stack.push(node3);
             } catch (InterruptedException e) {
                 e.printStackTrace();

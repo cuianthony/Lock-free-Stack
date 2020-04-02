@@ -11,8 +11,8 @@ public class q1 {
     static ConcurrentHashMap<Integer, Triple> tripleMap;
     static volatile Triple endTriple;
 
-    static int n = 1000000;
-    static int t = 1000;
+    static int n = 5000;
+    static int t = 4;
     static long s = System.currentTimeMillis();
 //    static long s = (args.length>1) ? Integer.parseInt(args[1]) : System.currentTimeMillis();
 
